@@ -1,0 +1,75 @@
+name: ECU-TECH console
+
+on: [push,pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '8'
+
+      - name: Test Compiler
+        run: javac -version
+
+      - name: Install Tools
+        working-directory: ./.github/workflows/
+        run: |
+          sudo ./add-ubuntu-latest-apt-mirrors.sh
+          sudo apt-get install sshpass mtools
+
+      - name: Generate Live Documentation
+        working-directory: ./firmware/
+        run: ./gen_live_documentation.sh
+
+      - name: Generate Configs
+        working-directory: ./firmware/
+        run: ./gen_config_board.sh config/boards/f407-discovery f407-discovery
+
+      - name: Generate Java (Antlr)
+        working-directory: ./java_tools
+        run: ./gradlew :config_definition:generateGrammarSource
+
+      - name: Print GCC version
+        working-directory: .
+        run: gcc -v
+
+      - name: Test console
+        # at the moment 'jar' task does not depend on tests?! maybe because tests take some time?
+        working-directory: ./java_tools
+        run: ./gradlew test
+
+      - name: Build console
+        working-directory: ./java_tools
+        run: ./gradlew :ui:shadowJar
+
+      - name: Attach console junit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: console junit
+          path: ./java_console/build/*.txt
+
+      - name: Configuration Definition CI, without pushing new .jar
+        working-directory: ./java_tools
+        run: ./gradlew :config_definition:shadowJar
+
+      - name: Test everything java_tools gradle while we are here
+        working-directory: ./java_tools
+        run: ./gradlew test
+
+      - name: Configuration Definition and other tools CI, without pushing new .jars
+        working-directory: ./java_tools
+        run: ./gradlew shadowJar
+
+      # this job focuses of tool validation so we do not push fresh enums here
+      - name: Generate Enums using freshly compiled tool
+        working-directory: ./firmware/
+        run: ./gen_enum_to_string.sh

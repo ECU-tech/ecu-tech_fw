@@ -1,0 +1,49 @@
+name: Simulator
+
+on: [push, pull_request]
+
+jobs:
+  # This is just to ensure the simulator compiles on Linux
+  build-simulator:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Checkout Submodules
+      run: |
+        git submodule update --init --depth=1 firmware/ChibiOS
+        git submodule update --init --depth=1 firmware/ChibiOS-Contrib
+        git submodule update --init --depth=1 firmware/libfirmware
+        git submodule update --init --depth=1 firmware/ext/lua
+        git submodule update --init --depth=1 firmware/controllers/lua/luaaa
+        git submodule update --init --depth=1 firmware/controllers/can/wideband_firmware
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '8'
+
+    - name: Print GCC version
+      working-directory: .
+      run: gcc -v
+
+    - name: Install multilib
+      working-directory: ./.github/workflows/
+      run: |
+        sudo ./add-ubuntu-latest-apt-mirrors.sh
+        sudo apt-get install gcc-multilib g++-multilib mtools dosfstools zip
+
+    - name: Compile Linux Simulator
+      working-directory: ./simulator/
+      run: SHORT_BOARD_NAME=f407-discovery ./compile.sh
+
+    - name: Run Linux Simulator for 10 seconds
+      working-directory: ./simulator/
+      run: ./build/ecu-tech_simulator 10
+
+    - name: Upload Linux built simulator
+      uses: actions/upload-artifact@v4
+      with:
+        name: ecu-tech_simulator_linux
+        path: ./simulator/build/ecu-tech_simulator

@@ -1,0 +1,26 @@
+include ':core_io'
+project(':core_io').projectDir = new File('../java_console/shared_io')
+include ':logging-api'
+project(':logging-api').projectDir = new File('../java_console/logging-api')
+include ':enum_to_string'
+project(':enum_to_string').projectDir = new File('enum_to_string')
+include ':config_definition_base'
+project(':config_definition_base').projectDir = new File('configuration_definition_base')
+include ':config_definition'
+project(':config_definition').projectDir = new File('configuration_definition')
+include ':ecu_io'
+project(':ecu_io').projectDir = new File('../java_console/io')
+include ':logging'
+project(':logging').projectDir = new File('../java_console/logging')
+include ':logging-api'
+project(':logging-api').projectDir = new File('../java_console/logging-api')
+include ':inifile'
+project(':inifile').projectDir = new File('../java_console/inifile')
+include ':models'
+project(':models').projectDir = new File('../java_console/models')
+include ':autotest'
+project(':autotest').projectDir = new File('../java_console/autotest')
+include ':ui'
+project(':ui').projectDir = new File('../java_console/ui')
+include ':luaformatter'
+project(':luaformatter').projectDir = new File('../java_console/luaformatter_module')
