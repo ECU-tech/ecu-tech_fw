@@ -43,6 +43,3 @@
 	path = firmware/ext/build-tools
 	url = https://github.com/ECU-tech/build-tools.git
 	branch = main
-[submodule "firmware/controllers/can/wideband_firmware/wideband"]
-	path = firmware/controllers/can/wideband_firmware/wideband
-	url = https://github.com/mck1117/wideband
